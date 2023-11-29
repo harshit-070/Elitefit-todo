@@ -12,7 +12,14 @@ import {
 import TaskCard from "../components/TaskCard";
 import ActionTab from "../components/Tabs";
 import SearchInput from "../components/SearchInput";
-import { Box, Center, Text, Grid, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Center,
+  Text,
+  Grid,
+  useDisclosure,
+  Heading,
+} from "@chakra-ui/react";
 import AddButton from "../components/AddButton";
 import { v4 as uuidv4 } from "uuid";
 import { useSearchParams } from "react-router-dom";
@@ -183,6 +190,17 @@ const Task = () => {
 
   return (
     <Box maxWidth={{ base: "100%", md: "40%" }} margin={"25px auto"}>
+      <Center marginBottom={"25px"}>
+        <h1
+          style={{
+            fontFamily: "serif",
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+          }}
+        >
+          Elitefit AI Todo List
+        </h1>
+      </Center>
       <Suspense
         fallback={
           <div>
