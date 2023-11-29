@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import {
   getLocalstorageItem,
   setLocalStorageItem,
@@ -6,7 +6,6 @@ import {
 import TaskCard from "../components/TaskCard";
 import ActionTab from "../components/Tabs";
 import SearchInput from "../components/SearchInput";
-import TaskModal from "../components/TaskModal";
 import { Box, Center, Text, Grid, useDisclosure } from "@chakra-ui/react";
 import AddButton from "../components/AddButton";
 import { v4 as uuidv4 } from "uuid";
@@ -27,6 +26,10 @@ import {
 } from "../utils/constant.utils";
 import moment from "moment";
 import { toastError, toastSuccess } from "../utils/toast.utils";
+import { CircularProgress } from "@chakra-ui/react";
+
+const TaskModal = lazy(() => import("../components/TaskModal"));
+
 const Task = () => {
   const TASK_LIST = "task_list";
 
@@ -159,13 +162,21 @@ const Task = () => {
 
   return (
     <Box maxWidth={{ base: "100%", md: "40%" }} margin={"25px auto"}>
-      <TaskModal
-        isOpen={isOpen}
-        handleModalClose={handleModalClose}
-        editTask={editTask}
-        addTaskInList={addTaskInList}
-        updateTaskInList={updateTaskInList}
-      />
+      <Suspense
+        fallback={
+          <div>
+            <CircularProgress isIndeterminate />
+          </div>
+        }
+      >
+        <TaskModal
+          isOpen={isOpen}
+          handleModalClose={handleModalClose}
+          editTask={editTask}
+          addTaskInList={addTaskInList}
+          updateTaskInList={updateTaskInList}
+        />
+      </Suspense>
       <ActionTab />
       <SearchInput />
       <AddButton onOpen={onOpen} />
