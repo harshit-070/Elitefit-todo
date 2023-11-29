@@ -1,4 +1,10 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
+import React, {
+  useEffect,
+  useState,
+  lazy,
+  Suspense,
+  useTransition,
+} from "react";
 import {
   getLocalstorageItem,
   setLocalStorageItem,
@@ -32,11 +38,12 @@ const TaskModal = lazy(() => import("../components/TaskModal"));
 
 const Task = () => {
   const TASK_LIST = "task_list";
-
+  const [isPending, startTransition] = useTransition();
   const [taskList, setTaskList] = useState(
     JSON.parse(getLocalstorageItem(TASK_LIST)) || []
   );
   const [filteredList, setFilteredList] = useState([]);
+  const [search, setSearch] = useState("");
   const [editTask, setEditTask] = useState({});
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -48,28 +55,20 @@ const Task = () => {
 
   let [searchParams] = useSearchParams();
   const selected = searchParams.get("selected");
-  const search = searchParams.get("search");
   const priority = searchParams.get("priority");
   const sort = searchParams.get("sort");
 
   useEffect(() => {
-    setFilteredList(() => {
-      var list = taskList;
+    setFilteredList((prevFilteredList) => {
+      var list;
+      if (search !== "") {
+        list = prevFilteredList;
+      } else {
+        list = taskList;
+      }
 
       if (priority !== ALL_PRIORITY) {
         list = list.filter((task) => task.priority === priority);
-      }
-
-      if (search !== null) {
-        if (search !== "") {
-          const lowerCaseSearch = search.toLowerCase().trimStart().trimEnd();
-          list = list.filter((task) => {
-            return (
-              task.title.toLowerCase().includes(lowerCaseSearch) ||
-              task.description.toLowerCase().includes(lowerCaseSearch)
-            );
-          });
-        }
       }
 
       if (selected === COMPLETED) {
@@ -116,7 +115,29 @@ const Task = () => {
 
       return [...list];
     });
-  }, [selected, taskList, search, priority, sort]);
+  }, [selected, taskList, priority, sort]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value.trim());
+    startTransition(() => {
+      setFilteredList((prevFilteredList) => {
+        const lowerCaseSearch = e.target.value
+          .toLowerCase()
+          .trimStart()
+          .trimEnd();
+        if (lowerCaseSearch === "") {
+          return [...taskList];
+        }
+        const list = prevFilteredList.filter((task) => {
+          return (
+            task.title.toLowerCase().includes(lowerCaseSearch) ||
+            task.description.toLowerCase().includes(lowerCaseSearch)
+          );
+        });
+        return [...list];
+      });
+    });
+  };
 
   const addTaskInList = (task) => {
     setTaskList((prevTaskList) => [
@@ -178,37 +199,45 @@ const Task = () => {
         />
       </Suspense>
       <ActionTab />
-      <SearchInput />
+      <SearchInput search={search} handleSearchChange={handleSearchChange} />
       <AddButton onOpen={onOpen} />
 
-      <Grid
-        templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(1, 1fr)" }}
-        gap={5}
-        padding={{ base: "10px", md: "0" }}
-      >
-        {filteredList.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            setEditTask={setEditTask}
-            onOpen={onOpen}
-            removeTask={removeTaskFromList}
-            completeTask={completeTask}
-          />
-        ))}
-      </Grid>
-      <Center>
-        {filteredList.length === 0 ? (
-          <Text fontSize={"25px"} margin={"15px"}>
-            {selected === ALL ? "Please add a task" : ""}
-            {selected === UPCOMING ? "No Task is Upcoming" : ""}
-            {selected === OVERDUE ? "No Task is Overdue" : ""}
-            {selected === COMPLETED ? "No Task is Completed" : ""}
-          </Text>
-        ) : (
-          <></>
-        )}
-      </Center>
+      {isPending ? (
+        <Center>
+          <CircularProgress isIndeterminate />
+        </Center>
+      ) : (
+        <>
+          <Grid
+            templateColumns={{ base: "repeat(1, 1fr)", md: "repeat(1, 1fr)" }}
+            gap={5}
+            padding={{ base: "10px", md: "0" }}
+          >
+            {filteredList.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                setEditTask={setEditTask}
+                onOpen={onOpen}
+                removeTask={removeTaskFromList}
+                completeTask={completeTask}
+              />
+            ))}
+          </Grid>
+          <Center>
+            {filteredList.length === 0 ? (
+              <Text fontSize={"25px"} margin={"15px"}>
+                {selected === ALL ? "Please add a task" : ""}
+                {selected === UPCOMING ? "No Task is Upcoming" : ""}
+                {selected === OVERDUE ? "No Task is Overdue" : ""}
+                {selected === COMPLETED ? "No Task is Completed" : ""}
+              </Text>
+            ) : (
+              <></>
+            )}
+          </Center>
+        </>
+      )}
     </Box>
   );
 };

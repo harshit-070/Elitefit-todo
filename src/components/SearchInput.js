@@ -1,11 +1,9 @@
 import {
   Box,
-  Button,
   Flex,
   Input,
   InputGroup,
   InputLeftElement,
-  InputRightElement,
   Menu,
   MenuButton,
   MenuList,
@@ -13,7 +11,7 @@ import {
   IconButton,
   MenuDivider,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Search2Icon } from "@chakra-ui/icons";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -29,27 +27,16 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faSort } from "@fortawesome/free-solid-svg-icons";
 
-const SearchInput = () => {
+const SearchInput = ({ search, handleSearchChange }) => {
   let [searchParams, setSearchParams] = useSearchParams();
-
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setSearchParams({
       ...Object.fromEntries([...searchParams]),
-      search: "",
       priority: ALL_PRIORITY,
       sort: "",
     });
   }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSearchParams({
-      ...Object.fromEntries([...searchParams]),
-      search: search,
-    });
-  };
 
   const handleChangePriority = (priority) => {
     setSearchParams({
@@ -74,7 +61,7 @@ const SearchInput = () => {
       padding={{ base: "10px", md: 0 }}
     >
       <Box minW={{ base: "70%", sm: "70%" }}>
-        <form onSubmit={handleSubmit}>
+        <form>
           <InputGroup>
             <InputLeftElement pointerEvents="none">
               <Search2Icon color="black" />
@@ -84,19 +71,8 @@ const SearchInput = () => {
               placeholder="eg. Workout"
               value={search}
               borderColor={"black"}
-              onChange={(e) => {
-                setSearch(e.target.value);
-              }}
+              onChange={handleSearchChange}
             />
-            <InputRightElement width="4.5rem">
-              <Button
-                type="submit"
-                colorScheme="black"
-                backgroundColor={"black"}
-              >
-                Search
-              </Button>
-            </InputRightElement>
           </InputGroup>
         </form>
       </Box>
