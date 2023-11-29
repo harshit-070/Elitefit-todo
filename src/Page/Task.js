@@ -18,7 +18,6 @@ import {
   Text,
   Grid,
   useDisclosure,
-  Heading,
 } from "@chakra-ui/react";
 import AddButton from "../components/AddButton";
 import { v4 as uuidv4 } from "uuid";
